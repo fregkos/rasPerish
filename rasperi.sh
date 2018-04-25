@@ -67,7 +67,8 @@ menu()
 	case $option in
 
     0 )
-      update-rc.d -f "PWD"/$0 remove
+      update-rc.d -f "$PWD"/$0 remove
+      sed '0,/flag=/s//flag=""/' "$PWD"/$0
       ;;
 
 		1 )
@@ -76,15 +77,15 @@ menu()
       sleep 1
       menu
 
-      update-rc.d -f "PWD"/$0 remove
-      sed -i '/flag=/c\flag="--haki"' "PWD"/$0
-			update-rc.d "PWD"/$0 defaults
+      update-rc.d -f "$PWD"/$0 remove
+      sed '0,/flag=/s//flag="--closest"/' "$PWD"/$0
+			update-rc.d "$PWD"/$0 defaults
 			;;
 
 		2 )
-      update-rc.d -f  "PWD"/$0 remove
-      sed -i '/flag=/c\flag="--closest"' "PWD"/$0
-      update-rc.d "PWD"/$0 defaults
+      update-rc.d -f  "$PWD"/$0 remove
+      sed '0,/flag=/s//flag="--haki"/' "$PWD"/$0
+      update-rc.d "$PWD"/$0 defaults
 			;;
 
 		* )
