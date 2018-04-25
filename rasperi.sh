@@ -16,6 +16,8 @@ main()
     haki
   elif [[ $1 == "--closest" ]]; then
     #attack_closest
+    echo "WIP"
+    menu
   else
     menu
   fi
@@ -79,12 +81,14 @@ menu()
 
       update-rc.d -f "$PWD"/$0 remove
       sed '0,/flag=/s//flag="--closest"/' "$PWD"/$0
+      cp "$PWD"/$0 /etc/init.d
 			update-rc.d "$PWD"/$0 defaults
 			;;
 
 		2 )
       update-rc.d -f  "$PWD"/$0 remove
       sed '0,/flag=/s//flag="--haki"/' "$PWD"/$0
+      cp "$PWD"/$0 /etc/init.d
       update-rc.d "$PWD"/$0 defaults
 			;;
 
