@@ -96,17 +96,21 @@ menu()
 	
 			#set_flag closest
 			sed '0,/flag=/s//flag="closest"/' "$PWD"/$0
-			if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
+			#add start up entry if it doesn't exist
+			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
 				echo "./rasperish/rasperi.sh" >> ~/.bashrc
 			fi
+			reboot
 			;;
 	
 		4 )
 			#set_flag haki
 			sed '0,/flag=/s//flag="haki"/' "$PWD"/$0
-			if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
+			#add start up entry if it doesn't exist
+			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
 				echo "./rasperish/rasperi.sh" >> ~/.bashrc
 			fi
+			reboot
 			;;
 
 
@@ -121,21 +125,17 @@ menu()
 
 set_flag()
 {
-	sed '0,/flag=/s//flag="$1"/' "$PWD"/$0
+	sed '0,/flag=/s//flag="\$1"/' "$PWD"/$0
 }
 
 enable_autologin()
 {
-	sed -i.backup "/ExecStart/c\ExecStart=-/sbin/agetty -a root --noclear %I $TERM" /etc/systemd/system/getty.target.wants/getty@tty1.service
-	#sed messes up with permissions, so we fix them
-	chmod --reference /etc/systemd/system/getty.target.wants/getty@tty1.service.backup /etc/systemd/system/getty.target.wants/getty@tty1.service
+	sed -i "/ExecStart/c\ExecStart=-/sbin/agetty -a root --noclear %I \$TERM" /lib/systemd/system/getty@.service
 }
 
 disable_autologin()
 {
-	sed -i.backup "/ExecStart/c\ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear %I $TERM" /etc/systemd/system/getty.target.wants/getty@tty1.service
-	#sed messes up with permissions, so we fix them
-	chmod --reference /etc/systemd/system/getty.target.wants/getty@tty1.service.backup /etc/systemd/system/getty.target.wants/getty@tty1.service
+	sed -i "/ExecStart/c\ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear %I \$TERM" /lib/systemd/system/getty@.service
 }
 
 haki()
