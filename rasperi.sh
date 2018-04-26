@@ -46,6 +46,7 @@ create_working_folder()
 
 print_menu()
 {
+	clear
 	echo
 	echo " Startup Menu - Make modifications for startup"
 	echo
@@ -63,7 +64,6 @@ print_menu()
 
 menu()
 {
-
 	#print the menu and choose your option afterwards
 	print_menu
 
@@ -94,23 +94,23 @@ menu()
 			sleep 1
 			menu
 	
-			#set_flag closest
-			sed '0,/flag=/s//flag="closest"/' "$PWD"/$0
+			set_flag closest
+			#sed '0,/flag=/s//flag="closest"/' "$PWD"/$0
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
 				echo "./rasperish/rasperi.sh" >> ~/.bashrc
 			fi
-			reboot
+			#reboot
 			;;
 	
 		4 )
-			#set_flag haki
-			sed '0,/flag=/s//flag="haki"/' "$PWD"/$0
+			set_flag haki
+			#sed '0,/flag=/s//flag="haki"/' "$PWD"/$0
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
 				echo "./rasperish/rasperi.sh" >> ~/.bashrc
 			fi
-			reboot
+			#reboot
 			;;
 
 
@@ -125,7 +125,7 @@ menu()
 
 set_flag()
 {
-	sed '0,/flag=/s//flag="\$1"/' "$PWD"/$0
+	sed -i "/flag=/c\flag=$1" "$PWD"/$0
 }
 
 enable_autologin()
