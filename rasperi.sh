@@ -10,14 +10,11 @@ flag=""
 main()
 {
   interface="wlan0"
-	start_mon
-	
+
   #check if script is setup, otherwise prompt
   if [[ $1 == "haki" ]]; then
     haki
   elif [[ $1 == "closest" ]]; then
-  	echo "WIP"
-		menu
     #attack_closest
   else
     menu
@@ -82,23 +79,36 @@ menu()
       ;;
 
 		1 )
+      enable_autologin
+      menu
+      ;;
+
+		2 )
+      disable_autologin
+      menu
+			;;
+
+    3 )
       echo
       echo "		[!] Mode is work in progress. Not available."
       sleep 1
       menu
 
-      set_flag closest
+      #set_flag closest
+      sed '0,/flag=/s//flag="closest"/' "$PWD"/$0
       if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
         echo "/rasperish/rasperi.sh" >> .bash.rc
       fi
-			;;
+  		;;
 
-		2 )
-      set_flag haki
+    4 )
+      #set_flag haki
+      sed '0,/flag=/s//flag="haki"/' "$PWD"/$0
       if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
         echo "/rasperish/rasperi.sh" >> .bash.rc
       fi
-			;;
+  		;;
+
 
 		* )
 			echo
