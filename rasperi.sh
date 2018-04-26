@@ -59,7 +59,7 @@ print_menu()
 
 menu()
 {
-	clear
+	#clear
 
 	#each time menu is called, clean up previous scans
 	clean_up_junk
@@ -124,19 +124,17 @@ menu()
 
 set_flag()
 {
-  sed '0,/flag=/s//flag="$1"/' "$PWD"/$0
+	sed '0,/flag=/s//flag="$1"/' "$PWD"/$0
 }
 
 enable_autologin()
 {
-  cp /etc/systemd/system/getty.target.wants/getty@tty1.service /etc/getty@tty1.service.backup
-  sed -i '/ExecService/c\"ExecService=-/sbin/agetty -a --noclear %I $TERM"' /etc/systemd/system/getty.target.wants/getty@tty1.service
+	sed -i "/ExecStart/c\ExecStart=-/sbin/agetty -a root --noclear %I $TERM" /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 disable_autologin()
 {
-  rm /etc/systemd/system/getty.target.wants/getty@tty1.service
-  mv /etc/getty@tty1.service.backup /etc/systemd/system/getty.target.wants/getty@tty1.service
+	sed -i "/ExecStart/c\ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear %I $TERM" /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 haki()
