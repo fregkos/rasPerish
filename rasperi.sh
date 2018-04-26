@@ -129,12 +129,13 @@ set_flag()
 
 enable_autologin()
 {
-  sed '0,/agetty -o \'-p \\\\u\'/s//agetty -a root/' /etc/systemd/system/getty.target.wants/getty@tty1.service
+  sed -i '/ExecService/c\"ExecService=-/sbin/agetty -a --noclear %I $TERM"' /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 disable_autologin()
 {
-  sed '0,/agetty -a root/s//agetty -o \'-p \\\\u\'/' /etc/systemd/system/getty.target.wants/getty@tty1.service
+  sed -i '/ExecService/c\"ExecService=-/sbin/agetty '-p -- \\u' --noclear %I $TERM"' /etc/systemd/system/getty.target.wants/getty@tty1.service
+  #sed '0,/agetty -a root/s//agetty -o \'-p \\\\u\'/' /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 haki()
