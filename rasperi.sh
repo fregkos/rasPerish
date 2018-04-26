@@ -10,14 +10,13 @@ flag=""
 main()
 {
   interface="wlan0"
-  start_mon
+	start_mon
+	
   #check if script is setup, otherwise prompt
-  if [[ $1 == "--haki" ]]; then
+  if [[ $1 == "haki" ]]; then
     haki
-  elif [[ $1 == "--closest" ]]; then
+  elif [[ $1 == "closest" ]]; then
     #attack_closest
-    echo "WIP"
-    menu
   else
     menu
   fi
@@ -42,11 +41,16 @@ create_working_folder()
 print_menu()
 {
 	echo
-	echo " Setup Menu"
+	echo " Startup Menu - Make modifications for startup"
 	echo
 	echo "   0    Unistall any previous script"
-	echo "   1    Attack closest network only"
-	echo "   2    Attack everyone in the perimeter"
+	echo "   1    Enable auto-login"
+  echo "   2    Disable auto-login"
+  echo
+  echo " Modes Menu - Install an attack mode at startup"
+  echo
+	echo "   3    Attack closest network only"
+	echo "   4    Attack everyone in the perimeter"
 	echo
 	echo -n "	Choose an option : "
 }
@@ -69,27 +73,29 @@ menu()
 	case $option in
 
     0 )
-      update-rc.d -f "$PWD"/$0 remove
+      #remove startup entry
+      sed -i '/\/rasperish\/rasperi.sh/d' ~/.bash.rc
+      #reset flag
       sed '0,/flag=/s//flag=""/' "$PWD"/$0
       ;;
 
 		1 )
       echo
-      echo "		[!] Mode is work in progress. Not available.gh"
+      echo "		[!] Mode is work in progress. Not available."
       sleep 1
       menu
 
-      update-rc.d -f "$PWD"/$0 remove
-      sed '0,/flag=/s//flag="--closest"/' "$PWD"/$0
-      cp "$PWD"/$0 /etc/init.d
-			update-rc.d "$PWD"/$0 defaults
+      set_flag closest
+      if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
+        echo "/rasperish/rasperi.sh" >> .bash.rc
+      fi
 			;;
 
 		2 )
-      update-rc.d -f  "$PWD"/$0 remove
-      sed '0,/flag=/s//flag="--haki"/' "$PWD"/$0
-      cp "$PWD"/$0 /etc/init.d
-      update-rc.d "$PWD"/$0 defaults
+      set_flag haki
+      if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
+        echo "/rasperish/rasperi.sh" >> .bash.rc
+      fi
 			;;
 
 		* )
@@ -99,6 +105,21 @@ menu()
 			menu
 			;;
 		esac
+}
+
+set_flag()
+{
+  sed '0,/flag=/s//flag="$1"/' "$PWD"/$0
+}
+
+enable_autologin()
+{
+  sed '0,/agetty -o '\''-p \\u'\''/s//agetty -a root/' /etc/systemd/system/getty.target.wants/getty@tty1.service
+}
+
+disable_autologin()
+{
+  sed '0,/agetty -a root/s//agetty -o '\''-p \\u'\''/' /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 haki()
