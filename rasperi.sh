@@ -5,8 +5,6 @@
 
 #TODO: Add a feature to target the closest WiFi in range. We'll play with PWR values in the scan file.
 
-#this defines the attack mode, DO NOT CHANGE, it is changed internally
-flag=""
 #this is your interface and since we use raspi0w, nexmon utilities use the same name for monitor mode
 interface="wlan0"
 #we use RAM to avoid flash memory wear out
@@ -17,9 +15,9 @@ main()
   start_mon
 
   #check if script is setup, otherwise prompt
-  if [[ $1 == "haki" ]]; then
+  if [[ $1 == "--haki" ]]; then
     haki
-  elif [[ $1 == "closest" ]]; then
+  elif [[ $1 == "--closest" ]]; then
     #attack_closest
     echo "WIP"
     menu
@@ -74,8 +72,7 @@ menu()
 		0 )
 			#remove startup entry
 			sed -i '/\/rasperish\/rasperi.sh/d' ~/.bashrc
-			#reset flag
-			sed -i "/flag=/c\flag=\"\"" "$PWD"/$0
+			rm flag
 		;;
 	
 		1 )
@@ -98,7 +95,7 @@ menu()
 			#sed '0,/flag=/s//flag="closest"/' "$PWD"/$0
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
-				echo "./rasperish/rasperi.sh" >> ~/.bashrc
+				echo "./rasperish/rasperi.sh --closest" >> ~/.bashrc
 			fi
 			#reboot
 			;;
@@ -108,7 +105,7 @@ menu()
 			#sed '0,/flag=/s//flag="haki"/' "$PWD"/$0
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
-				echo "./rasperish/rasperi.sh" >> ~/.bashrc
+				echo "./rasperish/rasperi.sh --haki" >> ~/.bashrc
 			fi
 			#reboot
 			;;
@@ -125,7 +122,7 @@ menu()
 
 set_flag()
 {
-	sed -i "/flag=/c\flag=\"$1\"" "$PWD"/$0
+	echo $1 > flag
 }
 
 enable_autologin()
@@ -188,10 +185,9 @@ scan()
 
 	#create the working directory, where we save our scan files temporarily
 	create_working_folder
-
 	
 	scan_interval=$1
-	timeout -k $scan_interval airodump-ng $interface --output-format kismet --write ""$working_folder"/perish_dump/scan_data" > /dev/null 2>&1 &
+	timeout $scan_interval airodump-ng $interface --output-format kismet --write ""$working_folder"/perish_dump/scan_data" > /dev/null 2>&1
 
 	awk -F "\"*;\"*" '{print $4}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/bssids
 	awk -F "\"*;\"*" '{print $3}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/essids
@@ -199,4 +195,4 @@ scan()
 }
 
 #Here starts the script and passes the flag argument to it
-main $flag
+main $1
