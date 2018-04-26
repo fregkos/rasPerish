@@ -10,5 +10,5 @@ It uses the **aircrack-ng** suite and assumes you are root.
 Give the script execute permissions
 > chmod +x rasperi.sh
 
-Run the script and follow the setup
+Navigate to script's folder, run the it as follows and complete the setup
 > ./rasperi.sh
