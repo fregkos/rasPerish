@@ -16,6 +16,8 @@ main()
   if [[ $1 == "haki" ]]; then
     haki
   elif [[ $1 == "closest" ]]; then
+  	echo "WIP"
+		menu
     #attack_closest
   else
     menu
