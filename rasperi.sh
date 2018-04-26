@@ -75,7 +75,7 @@ menu()
 			#remove startup entry
 			sed -i '/\/rasperish\/rasperi.sh/d' ~/.bashrc
 			#reset flag
-			sed '0,/flag=/s//flag=""/' "$PWD"/$0
+			sed -i "/flag=/c\flag=\"\"" "$PWD"/$0
 		;;
 	
 		1 )
