@@ -76,7 +76,7 @@ menu()
 
     0 )
       #remove startup entry
-      sed -i '/\/rasperish\/rasperi.sh/d' ~/.bash.rc
+      sed -i '/\/rasperish\/rasperi.sh/d' ~/.bashrc
       #reset flag
       sed '0,/flag=/s//flag=""/' "$PWD"/$0
       ;;
@@ -100,7 +100,7 @@ menu()
       #set_flag closest
       sed '0,/flag=/s//flag="closest"/' "$PWD"/$0
       if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
-        echo "/rasperish/rasperi.sh" >> .bash.rc
+        echo "/rasperish/rasperi.sh" >> .bashrc
       fi
   		;;
 
@@ -108,7 +108,7 @@ menu()
       #set_flag haki
       sed '0,/flag=/s//flag="haki"/' "$PWD"/$0
       if [[ $(grep -o rasperi.sh) != "rasperi.sh" ]]; then
-        echo "/rasperish/rasperi.sh" >> .bash.rc
+        echo "/rasperish/rasperi.sh" >> .bashrc
       fi
   		;;
 
@@ -129,12 +129,12 @@ set_flag()
 
 enable_autologin()
 {
-  sed '0,/agetty -o '\''-p \\u'\''/s//agetty -a root/' /etc/systemd/system/getty.target.wants/getty@tty1.service
+  sed '0,/agetty -o \'-p \\\\u\'/s//agetty -a root/' /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 disable_autologin()
 {
-  sed '0,/agetty -a root/s//agetty -o '\''-p \\u'\''/' /etc/systemd/system/getty.target.wants/getty@tty1.service
+  sed '0,/agetty -a root/s//agetty -o \'-p \\\\u\'/' /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 haki()
