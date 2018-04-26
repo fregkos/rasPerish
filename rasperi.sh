@@ -10,6 +10,7 @@ flag=""
 main()
 {
   interface="wlan0"
+  start_mon
 
   #check if script is setup, otherwise prompt
   if [[ $1 == "haki" ]]; then
