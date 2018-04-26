@@ -126,12 +126,16 @@ set_flag()
 
 enable_autologin()
 {
-	sed -i "/ExecStart/c\ExecStart=-/sbin/agetty -a root --noclear %I $TERM" /etc/systemd/system/getty.target.wants/getty@tty1.service
+	sed -i.backup "/ExecStart/c\ExecStart=-/sbin/agetty -a root --noclear %I $TERM" /etc/systemd/system/getty.target.wants/getty@tty1.service
+	#sed messes up with permissions, so we fix them
+	chmod --reference /etc/systemd/system/getty.target.wants/getty@tty1.service.backup /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 disable_autologin()
 {
-	sed -i "/ExecStart/c\ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear %I $TERM" /etc/systemd/system/getty.target.wants/getty@tty1.service
+	sed -i.backup "/ExecStart/c\ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear %I $TERM" /etc/systemd/system/getty.target.wants/getty@tty1.service
+	#sed messes up with permissions, so we fix them
+	chmod --reference /etc/systemd/system/getty.target.wants/getty@tty1.service.backup /etc/systemd/system/getty.target.wants/getty@tty1.service
 }
 
 haki()
