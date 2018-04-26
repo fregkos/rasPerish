@@ -125,7 +125,7 @@ menu()
 
 set_flag()
 {
-	sed -i "/flag=/c\flag=$1" "$PWD"/$0
+	sed -i "/flag=/c\flag=\"$1\"" "$PWD"/$0
 }
 
 enable_autologin()
