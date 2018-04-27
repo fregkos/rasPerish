@@ -72,7 +72,6 @@ menu()
 		0 )
 			#remove startup entry
 			sed -i '/\/rasperish\/rasperi.sh/d' ~/.bashrc
-			rm flag
 		;;
 	
 		1 )
@@ -91,8 +90,6 @@ menu()
 			sleep 1
 			menu
 	
-			set_flag closest
-			#sed '0,/flag=/s//flag="closest"/' "$PWD"/$0
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
 				echo "./rasperish/rasperi.sh --closest" >> ~/.bashrc
@@ -101,8 +98,6 @@ menu()
 			;;
 	
 		4 )
-			set_flag haki
-			#sed '0,/flag=/s//flag="haki"/' "$PWD"/$0
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
 				echo "./rasperish/rasperi.sh --haki" >> ~/.bashrc
@@ -118,11 +113,6 @@ menu()
 			menu
 			;;
 	esac
-}
-
-set_flag()
-{
-	echo $1 > flag
 }
 
 enable_autologin()
@@ -173,6 +163,9 @@ stop_mon()
 
 start_mon()
 {
+	#m2 is the correct mode, however it seems that there is a bug and in m2 mode sometimes nothing can be scanned
+	#doing this, solves that case
+	nexutil -m1
 	nexutil -m2
 }
 
