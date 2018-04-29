@@ -5,6 +5,7 @@
 
 #TODO: Add a feature to target the closest WiFi in range. We'll play with PWR values in the scan file.
 
+
 #this is your interface and since we use raspi0w, nexmon utilities use the same name for monitor mode
 interface="wlan0"
 #we use RAM to avoid flash memory wear out
@@ -88,7 +89,9 @@ menu()
 				echo "sleep 10; ./rasperish/rasperi.sh --closest" >> ~/.bashrc
 			fi
 			echo "	[i] Closest mode enabled, will be available after reboot."
-			sleep 2
+			echo "	[!] Note that you have 10 seconds delay before the attacking after reboot,"
+			echo "      so that you can connect and stop your pi."
+			sleep 4
 			;;
 
 		4 )
@@ -98,7 +101,9 @@ menu()
 				echo "sleep 10; ./rasperish/rasperi.sh --haki" >> ~/.bashrc
 			fi
 			echo "	[i] Haki mode enabled, will be available after reboot."
-			sleep 2
+			echo "	[!] Note that you have 10 seconds delay before the attacking after reboot,"
+			echo "      so that you can connect and stop your pi."
+			sleep 4
 			;;
 
 
