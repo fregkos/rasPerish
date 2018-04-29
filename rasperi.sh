@@ -5,7 +5,6 @@
 
 #TODO: Add a feature to target the closest WiFi in range. We'll play with PWR values in the scan file.
 
-
 #this is your interface and since we use raspi0w, nexmon utilities use the same name for monitor mode
 interface="wlan0"
 #we use RAM to avoid flash memory wear out
@@ -15,7 +14,7 @@ main()
 {
   start_mon
 
-  #check if script is setup, otherwise prompt
+  #check if script mode is chosen, otherwise prompt
   if [[ $1 == "--haki" ]]; then
     haki
   elif [[ $1 == "--closest" ]]; then
@@ -137,7 +136,7 @@ haki()
 	#create the working directory, where we save our scan files temporarily
 	create_working_folder
 
-	echo "	[i] Scanning continuously  for networks... "
+	echo "	[i] Scanning continuously for networks... "
 	echo
 
 	#scan every n seconds
@@ -181,7 +180,7 @@ scan()
 {
 	scan_interval=$1
 
-	#start data dumping every n seconds
+	#start data dumping in the background every n seconds
 	airodump-ng $interface --output-format kismet --write ""$working_folder"/perish_dump/scan_data" --write-interval $scan_interval &
 
 	#add an initial hysteresis before starting in order to have data ready
