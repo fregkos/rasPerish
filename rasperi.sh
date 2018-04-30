@@ -154,7 +154,7 @@ haki()
 
 			echo "	[+] Synchronising card to channel: $channel"
 			#sync the card to the victim's channel
-			iwconfig $interface channel $channel
+			nexutil -k$channel
 
 			echo "	[+] Attacking $essid"
 			#send some deauth packets to each wifi network
