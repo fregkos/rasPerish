@@ -4,7 +4,8 @@
 # 		aireplay-ng -0 $n -a $your_AP -c $mac $interface --ignore-negative-one
 #TODO: Add a feature to target the closest WiFi in range. We'll play with PWR values in the scan file.
 #TODO: Use /etc/rc.local instead of .bashrc
-#TODO: make autologin feature more safe (by keeping a backup and making a symlink to getty.target.wants)
+#TODO: Make autologin feature more safe (by keeping a backup and making a symlink to getty.target.wants)
+#TODO: Fix indentation using only one editor 
 
 #this is your interface and since we use raspi0w, nexmon utilities use the same name for monitor mode
 interface="wlan0"
