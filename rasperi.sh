@@ -177,6 +177,7 @@ start_mon()
 	#m2 is the correct mode, however it seems that there is a bug and in m2 mode sometimes nothing can be scanned
 	#doing this, solves that case
 	iw dev $interface set power_save off
+	nexutil -m0
 	nexutil -m2
 }
 
