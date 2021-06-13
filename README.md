@@ -1,7 +1,7 @@
 # rasPeri.sh
 Use your [rasp0w](https://www.raspberrypi.org/products/raspberry-pi-zero-w/) to perish ...or disconnect users from their networks
 
-Be careful, this script is *explicitly* made for **Raspberry Pi Zero W** and uses the ARM version of [Kali Linux Rpi0w Nexmon](https://www.offensive-security.com/kali-linux-arm-images/#1493408272250-e17e9049-9ce8).
+Be careful, this script is *explicitly* made for **Raspberry Pi Zero W** and uses the ARM version of [Kali Linux Rpi0w Nexmon](https://www.kali.org/get-kali/#kali-arm).
 
 It uses the **aircrack-ng** suite and assumes you are root.
 
